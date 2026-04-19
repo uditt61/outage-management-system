@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -11,11 +13,16 @@ const statsRoutes = require('./routes/statsRoutes');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  // In production, you will set FRONTEND_URL to your Vercel domain (e.g., https://my-outage-app.vercel.app)
+  // If it's not set (like on your local machine), it allows all origins ('*') so your local development doesn't break.
+  origin: process.env.FRONTEND_URL || '*'
+}));
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/outage_guardian')
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/outage_guardian';
+mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected Successfully'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
