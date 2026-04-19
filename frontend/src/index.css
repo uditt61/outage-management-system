@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 28% 17%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 17%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 215 28% 17%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 215 28% 17%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.625rem;
+
+    --sidebar-background: 215 28% 17%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 28% 23%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 215 28% 25%;
+    --sidebar-ring: 217 91% 60%;
+
+    --status-pending: 38 92% 50%;
+    --status-approved: 199 89% 48%;
+    --status-in-progress: 262 83% 58%;
+    --status-resolved: 142 76% 36%;
+    --status-rejected: 0 84% 60%;
+
+    --priority-low: 142 76% 36%;
+    --priority-medium: 38 92% 50%;
+    --priority-high: 0 84% 60%;
+  }
+
+  .dark {
+    --background: 215 28% 10%;
+    --foreground: 210 40% 96%;
+    --card: 215 28% 14%;
+    --card-foreground: 210 40% 96%;
+    --popover: 215 28% 14%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 28% 20%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 215 28% 20%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 215 28% 20%;
+    --accent-foreground: 210 40% 96%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 215 28% 20%;
+    --input: 215 28% 20%;
+    --ring: 217 91% 60%;
+    --sidebar-background: 215 28% 10%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 28% 16%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 215 28% 16%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+  .status-pending {
+    @apply bg-[hsl(var(--status-pending)/0.15)] text-[hsl(var(--status-pending))];
+  }
+  .status-approved {
+    @apply bg-[hsl(var(--status-approved)/0.15)] text-[hsl(var(--status-approved))];
+  }
+  .status-in-progress {
+    @apply bg-[hsl(var(--status-in-progress)/0.15)] text-[hsl(var(--status-in-progress))];
+  }
+  .status-resolved {
+    @apply bg-[hsl(var(--status-resolved)/0.15)] text-[hsl(var(--status-resolved))];
+  }
+  .status-rejected {
+    @apply bg-[hsl(var(--status-rejected)/0.15)] text-[hsl(var(--status-rejected))];
+  }
+  .priority-low {
+    @apply bg-[hsl(var(--priority-low)/0.15)] text-[hsl(var(--priority-low))];
+  }
+  .priority-medium {
+    @apply bg-[hsl(var(--priority-medium)/0.15)] text-[hsl(var(--priority-medium))];
+  }
+  .priority-high {
+    @apply bg-[hsl(var(--priority-high)/0.15)] text-[hsl(var(--priority-high))];
+  }
+}
