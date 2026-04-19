@@ -83,7 +83,8 @@ Create a `.env` file in the root of the `backend` directory. You will likely nee
 Start the local development server (typically configured with a tool like `nodemon` or `ts-node-dev` for hot-reloading):
 
 ```bash
-npm run dev
+node server.js
+
 # or use yarn dev / pnpm dev
 ```
 
