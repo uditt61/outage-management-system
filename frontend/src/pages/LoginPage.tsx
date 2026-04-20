@@ -30,9 +30,38 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [role, setRole] = useState<UserRole>("customer");
   const [loading, setLoading] = useState(false);
+  const [nameError, setNameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setName(val);
+    if (!isLogin && val.length > 0 && !/^[a-zA-Z\s]+$/.test(val)) {
+      setNameError("Name can only contain letters and spaces.");
+    } else {
+      setNameError("");
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setPassword(val);
+    if (
+      !isLogin &&
+      val.length > 0 &&
+      !/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(val)
+    ) {
+      setPasswordError(
+        "Password must be 8+ chars with 1 uppercase, 1 number, and 1 symbol.",
+      );
+    } else {
+      setPasswordError("");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLogin && (nameError || passwordError)) return;
     setLoading(true);
     try {
       if (isLogin) {
@@ -84,10 +113,13 @@ export default function LoginPage() {
                 <Input
                   id="name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={handleNameChange}
                   placeholder="John Doe"
                   required
                 />
+                {nameError && (
+                  <p className="text-xs text-destructive mt-1">{nameError}</p>
+                )}
               </div>
             )}
             <div className="space-y-2">
@@ -107,10 +139,13 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
                 placeholder="••••••••"
                 required
               />
+              {!isLogin && passwordError && (
+                <p className="text-xs text-destructive mt-1">{passwordError}</p>
+              )}
             </div>
             {!isLogin && (
               <div className="space-y-2">
@@ -130,7 +165,13 @@ export default function LoginPage() {
                 </Select>
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={
+                loading || (!isLogin && (!!nameError || !!passwordError))
+              }
+            >
               {loading
                 ? "Please wait..."
                 : isLogin
@@ -142,7 +183,11 @@ export default function LoginPage() {
             <button
               type="button"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setNameError("");
+                setPasswordError("");
+              }}
             >
               {isLogin
                 ? "Don't have an account? Register"
