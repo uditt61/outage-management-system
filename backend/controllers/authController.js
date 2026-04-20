@@ -32,6 +32,7 @@ exports.register = async (req, res) => {
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'your_secret_key', { expiresIn: '1d' });
     res.status(201).json({ id: user._id, name: user.name, email: user.email, role: user.role, token });
   } catch (err) {
+    console.error("Registration Error:", err);
     res.status(500).json({ message: 'Server error during registration' });
   }
 };
@@ -50,6 +51,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ id: account._id, role: account.role }, process.env.JWT_SECRET || 'your_secret_key', { expiresIn: '1d' });
     res.json({ id: account._id, name: account.name, email: account.email, role: account.role, token });
   } catch (err) {
+    console.error("Login Error:", err);
     res.status(500).json({ message: 'Server error during login' });
   }
 };
