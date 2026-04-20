@@ -36,22 +36,23 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (isLogin) {
-        const success = await login(email, password);
-        if (!success) {
+        const result = await login(email, password);
+        if (!result.success) {
           toast({
             title: "Login failed",
-            description: "Invalid email or password. Please try again.",
+            description: result.message || "An unknown error occurred.",
             variant: "destructive",
           });
         }
       } else {
-        const success = await register(name, email, password, role);
-        if (success) {
+        const result = await register(name, email, password, role);
+        if (result.success) {
           toast({ title: "Account created successfully!" });
         } else {
           toast({
             title: "Registration failed",
-            description: "Email might be taken or Admin already exists.",
+            description:
+              result.message || "An unknown registration error occurred.",
             variant: "destructive",
           });
         }

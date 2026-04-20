@@ -17,7 +17,9 @@ export default function NotificationsPage() {
   // Fetch real notifications from the backend
   useEffect(() => {
     if (user?.id) {
-      fetch(`http://localhost:5000/api/notifications/${user.id}`, {
+      const API_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      fetch(`${API_URL}/notifications/${user.id}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       })
         .then((res) => res.json())
@@ -28,7 +30,9 @@ export default function NotificationsPage() {
 
   const markRead = async (id: string) => {
     try {
-      await fetch(`http://localhost:5000/api/notifications/${id}/read`, {
+      const API_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      await fetch(`${API_URL}/notifications/${id}/read`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${getToken()}` },
       });
@@ -43,13 +47,12 @@ export default function NotificationsPage() {
   const markAllRead = async () => {
     if (!user?.id) return;
     try {
-      await fetch(
-        `http://localhost:5000/api/notifications/user/${user.id}/read-all`,
-        {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${getToken()}` },
-        },
-      );
+      const API_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      await fetch(`${API_URL}/notifications/user/${user.id}/read-all`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (err) {
       console.error("Error marking all as read:", err);

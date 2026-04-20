@@ -7,6 +7,8 @@ const getToken = () => {
   return saved ? JSON.parse(saved).token : "";
 };
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 /**
  * Custom hook for managing outage data with CRUD operations.
  */
@@ -17,7 +19,7 @@ export function useOutages() {
   const { data: outages = [] } = useQuery<Outage[]>({
     queryKey: ["outages"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:5000/api/outages", {
+      const res = await fetch(`${API_URL}/outages`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       if (!res.ok) throw new Error("Failed to fetch outages");
@@ -33,7 +35,7 @@ export function useOutages() {
 
   const addMutation = useMutation({
     mutationFn: async (outage: Omit<Outage, "id" | "createdAt" | "updatedAt" | "status" | "priority">) => {
-      const res = await fetch("http://localhost:5000/api/outages", {
+      const res = await fetch(`${API_URL}/outages`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -50,7 +52,7 @@ export function useOutages() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Outage> }) => {
-      const res = await fetch(`http://localhost:5000/api/outages/${id}`, {
+      const res = await fetch(`${API_URL}/outages/${id}`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",

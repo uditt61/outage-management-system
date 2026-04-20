@@ -68,7 +68,8 @@ export default function AdminDashboard() {
   const [technicians, setTechnicians] = useState<User[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/users/technicians", {
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    fetch(`${API_URL}/users/technicians`, {
       headers: { Authorization: `Bearer ${getToken()}` },
     })
       .then((res) => res.json())
@@ -141,14 +142,25 @@ export default function AdminDashboard() {
                   strokeDasharray="3 3"
                   className="stroke-border"
                 />
-                <XAxis 
-                  dataKey="date" 
-                  className="text-xs" 
-                  tickFormatter={(val) => new Date(val).toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" })}
+                <XAxis
+                  dataKey="date"
+                  className="text-xs"
+                  tickFormatter={(val) =>
+                    new Date(val).toLocaleDateString("en-US", {
+                      weekday: "short",
+                      timeZone: "UTC",
+                    })
+                  }
                 />
                 <YAxis className="text-xs" />
-                <Tooltip 
-                  labelFormatter={(val) => new Date(val).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}
+                <Tooltip
+                  labelFormatter={(val) =>
+                    new Date(val).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      timeZone: "UTC",
+                    })
+                  }
                 />
                 <Bar
                   dataKey="count"

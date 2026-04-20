@@ -14,7 +14,8 @@ export default function TechniciansPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/users/technicians", {
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    fetch(`${API_URL}/users/technicians`, {
       headers: { Authorization: `Bearer ${getToken()}` },
     })
       .then((res) => res.json())

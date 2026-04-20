@@ -6,11 +6,13 @@ const getToken = () => {
   return saved ? JSON.parse(saved).token : "";
 };
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 export function useDashboardStats() {
   return useQuery<DashboardStats>({
     queryKey: ["dashboardStats"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:5000/api/stats", {
+      const res = await fetch(`${API_URL}/stats`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
       if (!res.ok) throw new Error("Failed to fetch dashboard stats");
@@ -25,7 +27,7 @@ export function useRecentTrend() {
   return useQuery<{ date: string; count: number }[]>({
     queryKey: ["recentTrend"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:5000/api/stats/trend", {
+      const res = await fetch(`${API_URL}/stats/trend`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
       if (!res.ok) throw new Error("Failed to fetch recent trend");
