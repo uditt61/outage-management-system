@@ -8,6 +8,7 @@ import {
   Zap,
   Users,
   TrendingUp,
+  MapPin,
 } from "lucide-react";
 import {
   BarChart,
@@ -53,6 +54,17 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+const getCustomIcon = (type: string) => {
+  const emoji = type === 'electricity' ? '⚡' : type === 'water' ? '💧' : '🌐';
+  return L.divIcon({
+    html: `<div style="font-size: 16px; background: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid ${type === 'electricity' ? '#f59e0b' : type === 'water' ? '#3b82f6' : '#10b981'}">${emoji}</div>`,
+    className: 'custom-leaflet-icon',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -14],
+  });
+};
+
 const PIE_COLORS = [
   "hsl(217, 91%, 60%)",
   "hsl(142, 76%, 36%)",
@@ -78,6 +90,7 @@ export default function AdminDashboard() {
   const [selectedTech, setSelectedTech] = useState("");
   const [selectedPriority, setSelectedPriority] = useState<Priority>("medium");
   const [technicians, setTechnicians] = useState<User[]>([]);
+  const [map, setMap] = useState<L.Map | null>(null);
 
   useEffect(() => {
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -115,6 +128,26 @@ export default function AdminDashboard() {
       ? [(withLocation[0] as any).latitude, (withLocation[0] as any).longitude]
       : [51.505, -0.09];
   }, [outages]);
+
+  const handleLocateMe = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const newPos: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        if (map) {
+          map.flyTo(newPos, 13);
+        }
+      },
+      () => {
+        alert("Unable to retrieve your location. Please check your browser permissions.");
+      }
+    );
+  };
 
   if (isLoading) {
     return (
@@ -232,10 +265,20 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="h-[400px] w-full rounded-md overflow-hidden border z-0 relative">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute top-2 right-2 z-[1000] shadow-md"
+              onClick={handleLocateMe}
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              Locate Me
+            </Button>
             <MapContainer
               center={mapCenter}
               zoom={11}
               style={{ height: "100%", width: "100%" }}
+              ref={setMap}
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -244,7 +287,11 @@ export default function AdminDashboard() {
               {outages
                 .filter((o: any) => o.latitude && o.longitude)
                 .map((o: any) => (
-                  <Marker key={o.id} position={[(o as any).latitude, (o as any).longitude]}>
+                  <Marker 
+                    key={o.id} 
+                    position={[(o as any).latitude, (o as any).longitude]}
+                    icon={getCustomIcon(o.type)}
+                  >
                     <Popup>
                       <div className="text-sm">
                         <p className="font-semibold">{o.title}</p>

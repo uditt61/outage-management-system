@@ -48,15 +48,20 @@ export default function LocationPicker({
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const newPos: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        const newPos: [number, number] = [
+          pos.coords.latitude,
+          pos.coords.longitude,
+        ];
         setPosition(newPos);
         if (map) {
           map.flyTo(newPos, 15); // Pan to the GPS location and zoom in
         }
       },
       () => {
-        alert("Unable to retrieve your location. Please check your browser permissions.");
-      }
+        alert(
+          "Unable to retrieve your location. Please check your browser permissions.",
+        );
+      },
     );
   };
 
@@ -65,7 +70,7 @@ export default function LocationPicker({
       <Button
         variant="secondary"
         size="sm"
-        className="absolute top-2 right-2 z-[400] shadow-md"
+        className="absolute top-2 right-2 z-[1000] shadow-md"
         onClick={handleLocateMe}
       >
         <MapPin className="w-4 h-4 mr-2" />
