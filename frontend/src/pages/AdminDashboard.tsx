@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDashboardStats, useRecentTrend } from "@/hooks/useDashboardStats";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,18 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Outage, Priority, User } from "@/types/oms";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
+const DefaultIcon = L.icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+L.Marker.prototype.options.icon = DefaultIcon;
 
 const PIE_COLORS = [
   "hsl(217, 91%, 60%)",
@@ -96,6 +108,13 @@ export default function AdminDashboard() {
       }
     }
   };
+
+  const mapCenter: [number, number] = useMemo(() => {
+    const withLocation = outages.filter((o: any) => o.latitude && o.longitude);
+    return withLocation.length > 0
+      ? [(withLocation[0] as any).latitude, (withLocation[0] as any).longitude]
+      : [51.505, -0.09];
+  }, [outages]);
 
   if (isLoading) {
     return (
@@ -206,6 +225,42 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Live Outage Map</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[400px] w-full rounded-md overflow-hidden border z-0 relative">
+            <MapContainer
+              center={mapCenter}
+              zoom={11}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {outages
+                .filter((o: any) => o.latitude && o.longitude)
+                .map((o: any) => (
+                  <Marker key={o.id} position={[(o as any).latitude, (o as any).longitude]}>
+                    <Popup>
+                      <div className="text-sm">
+                        <p className="font-semibold">{o.title}</p>
+                        <p className="text-xs text-muted-foreground">{o.location}</p>
+                        <div className="mt-2 flex gap-2">
+                          <span className="capitalize px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">{o.type}</span>
+                          <span className="capitalize px-2 py-1 bg-muted rounded-md text-xs">{o.status.replace('_', ' ')}</span>
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+            </MapContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       <div>
         <h2 className="text-lg font-semibold mb-3">All Outage Reports</h2>
