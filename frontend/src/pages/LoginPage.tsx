@@ -18,8 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Zap } from "lucide-react";
+import { Zap, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
   const { login, register } = useAuth();
@@ -32,6 +33,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [nameError, setNameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -91,6 +93,35 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      setLoading(true);
+      const API_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${API_URL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: credentialResponse.credential, role }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("oms_user", JSON.stringify(data));
+        toast({ title: "Successfully logged in with Google!" });
+        window.location.href = "/";
+      } else {
+        toast({
+          title: "Google Login failed",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({ title: "An error occurred", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-xl">
@@ -135,14 +166,29 @@ export default function LoginPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={handlePasswordChange}
-                placeholder="••••••••"
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={handlePasswordChange}
+                  placeholder="••••••••"
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
               {!isLogin && passwordError && (
                 <p className="text-xs text-destructive mt-1">{passwordError}</p>
               )}
@@ -179,6 +225,19 @@ export default function LoginPage() {
                   : "Create Account"}
             </Button>
           </form>
+
+          <div className="mt-6 flex flex-col items-center space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Or continue with
+            </div>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() =>
+                toast({ title: "Google Login Failed", variant: "destructive" })
+              }
+            />
+          </div>
+
           <div className="mt-4 text-center">
             <button
               type="button"

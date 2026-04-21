@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User, Admin } = require('../models/User');
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.register = async (req, res) => {
   try {
@@ -64,5 +66,53 @@ exports.login = async (req, res) => {
   } catch (err) {
     console.error("Login Error:", err);
     res.status(500).json({ message: 'Server error during login' });
+  }
+};
+
+exports.googleLogin = async (req, res) => {
+  try {
+    const { token, role } = req.body;
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { email, name, sub } = payload;
+
+    let account = await Admin.findOne({ email }) || await User.findOne({ email });
+
+    if (!account) {
+      // Create a new user if one doesn't exist
+      const requestedRole = role || 'customer';
+      
+      if (requestedRole === 'admin') {
+        const adminExists = await Admin.findOne();
+        if (adminExists) {
+          return res.status(403).json({ message: 'An admin account already exists. Only one admin is allowed.' });
+        }
+        account = new Admin({ name, email, password: sub }); // using sub as a placeholder password
+        await account.save();
+      } else {
+        account = new User({ name, email, password: sub, role: requestedRole });
+        await account.save();
+      }
+    }
+
+    const jwtToken = jwt.sign(
+      { id: account._id, role: account.role },
+      process.env.JWT_SECRET || 'your_secret_key',
+      { expiresIn: '1d' }
+    );
+
+    res.status(200).json({
+      id: account._id,
+      name: account.name,
+      email: account.email,
+      role: account.role,
+      token: jwtToken,
+    });
+  } catch (err) {
+    console.error("Google Login Error:", err);
+    res.status(500).json({ message: 'Server error during Google login' });
   }
 };
