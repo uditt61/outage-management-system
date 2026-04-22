@@ -130,3 +130,7 @@
     @apply bg-[hsl(var(--priority-high)/0.15)] text-[hsl(var(--priority-high))];
   }
 }
+
+html {
+  scroll-behavior: smooth;
+}
