@@ -1,6 +1,7 @@
 import { useOutages } from "@/hooks/useOutages";
 import { StatsCard } from "@/components/StatsCard";
 import { OutageCard } from "@/components/OutageCard";
+
 import {
   AlertTriangle,
   Clock,
@@ -10,6 +11,7 @@ import {
   TrendingUp,
   MapPin,
 } from "lucide-react";
+
 import {
   BarChart,
   Bar,
@@ -22,8 +24,11 @@ import {
   Pie,
   Cell,
 } from "recharts";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
+
 import {
   Select,
   SelectContent,
@@ -45,6 +50,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import "leaflet/dist/leaflet.css";
 
 const DefaultIcon = L.icon({
   iconUrl: markerIcon,
@@ -123,9 +129,9 @@ export default function AdminDashboard() {
   };
 
   const mapCenter: [number, number] = useMemo(() => {
-    const withLocation = outages.filter((o: any) => o.latitude && o.longitude);
+    const withLocation = outages.filter((o) => o.latitude && o.longitude);
     return withLocation.length > 0
-      ? [(withLocation[0] as any).latitude, (withLocation[0] as any).longitude]
+      ? [withLocation[0].latitude!, withLocation[0].longitude!]
       : [51.505, -0.09];
   }, [outages]);
 
@@ -285,11 +291,11 @@ export default function AdminDashboard() {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               {outages
-                .filter((o: any) => o.latitude && o.longitude)
-                .map((o: any) => (
+                .filter((o) => o.latitude && o.longitude)
+                .map((o) => (
                   <Marker 
                     key={o.id} 
-                    position={[(o as any).latitude, (o as any).longitude]}
+                    position={[o.latitude!, o.longitude!]}
                     icon={getCustomIcon(o.type)}
                   >
                     <Popup>

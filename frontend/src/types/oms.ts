@@ -30,6 +30,8 @@ export interface Outage {
   assignedTo?: string; // technician user id
   assignedToName?: string;
   resolutionNotes?: string;
+  latitude?: number;
+  longitude?: number;
   createdAt: string;
   updatedAt: string;
 }

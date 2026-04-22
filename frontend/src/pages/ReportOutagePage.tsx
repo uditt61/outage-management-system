@@ -59,7 +59,7 @@ export default function ReportOutagePage() {
         reportedByName: user!.name,
         latitude: position[0],
         longitude: position[1],
-      } as any); // Cast as any temporarily to prevent TypeScript errors if types/oms.ts isn't updated yet
+      });
       toast({ title: "Outage reported successfully!" });
       navigate("/my-reports");
     } finally {
