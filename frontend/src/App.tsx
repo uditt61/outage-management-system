@@ -5,8 +5,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import AppLayout from "@/components/AppLayout";
 import LoginPage from "@/pages/LoginPage";
+import LandingPage from "@/pages/LandingPage";
 import Index from "@/pages/Index";
 import ReportOutagePage from "@/pages/ReportOutagePage";
 import MyReportsPage from "@/pages/MyReportsPage";
@@ -36,9 +38,13 @@ function AppRoutes() {
       <Route
         path="/"
         element={
-          <ProtectedRoute>
-            <Index />
-          </ProtectedRoute>
+          isAuthenticated ? (
+            <ProtectedRoute>
+              <Index />
+            </ProtectedRoute>
+          ) : (
+            <LandingPage />
+          )
         }
       />
       <Route
@@ -101,9 +107,11 @@ const App = () => (
         <Toaster />
         <Sonner />
         <AuthProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
+          <ThemeProvider defaultTheme="system" storageKey="oms-ui-theme">
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </ThemeProvider>
         </AuthProvider>
       </TooltipProvider>
     </GoogleOAuthProvider>

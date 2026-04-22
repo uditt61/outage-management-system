@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types/oms";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { Zap, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { GoogleLogin } from "@react-oauth/google";
 import { motion } from "framer-motion";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function LoginPage() {
   const { login, register } = useAuth();
@@ -124,14 +125,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      {/* Subtle Dot Pattern Background */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(hsl(var(--muted-foreground))_1px,transparent_1px)] [background-size:20px_20px] opacity-20"></div>
+
+      {/* Futuristic Floating Particles */}
+      <FloatingParticles />
+
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       <motion.div
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <Card className="shadow-xl">
+        <Card className="shadow-2xl card-moving-border">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-2">
               <Zap className="w-6 h-6 text-primary-foreground" />
@@ -224,7 +235,7 @@ export default function LoginPage() {
               )}
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full btn-moving-border"
                 disabled={
                   loading || (!isLogin && (!!nameError || !!passwordError))
                 }
@@ -270,6 +281,53 @@ export default function LoginPage() {
           </CardContent>
         </Card>
       </motion.div>
+    </div>
+  );
+}
+
+function FloatingParticles() {
+  // Generate 30 random particles that will float in the background
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 30 }).map((_, i) => ({
+        id: i,
+        size: Math.random() * 4 + 2, // Size between 2px and 6px
+        startX: Math.random() * 100, // Random X position (0-100%)
+        startY: Math.random() * 100, // Random Y position (0-100%)
+        duration: Math.random() * 15 + 15, // Animation duration (15s to 30s)
+        delay: Math.random() * 5, // Random start delay
+        moveX: Math.random() * 60 - 30, // Drift horizontally by -30px to +30px
+        moveY: Math.random() * 60 - 30, // Drift vertically by -30px to +30px
+      })),
+    [],
+  );
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full bg-primary/40 blur-[1px]"
+          style={{
+            width: p.size,
+            height: p.size,
+            left: `${p.startX}%`,
+            top: `${p.startY}%`,
+          }}
+          animate={{
+            x: [0, p.moveX, 0],
+            y: [0, p.moveY, 0],
+            opacity: [0.1, 0.8, 0.1],
+            scale: [1, 1.5, 1],
+          }}
+          transition={{
+            duration: p.duration,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: p.delay,
+          }}
+        />
+      ))}
     </div>
   );
 }

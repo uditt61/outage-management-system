@@ -97,6 +97,9 @@
 @layer base {
   * {
     @apply border-border;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
   }
   body {
     @apply bg-background text-foreground;
@@ -129,8 +132,102 @@
   .priority-high {
     @apply bg-[hsl(var(--priority-high)/0.15)] text-[hsl(var(--priority-high))];
   }
+  .animate-neon {
+    animation: neon-glow 2s infinite ease-in-out;
+  }
+  .btn-moving-border {
+    position: relative;
+    overflow: hidden;
+    background: transparent !important;
+    color: hsl(var(--foreground)) !important;
+    border: none;
+    z-index: 1;
+  }
+  .btn-moving-border::before {
+    content: "";
+    position: absolute;
+    top: -950%;
+    left: -50%;
+    width: 200%;
+    height: 2000%;
+    background: conic-gradient(transparent, hsl(var(--primary)), transparent 25%);
+    animation: spin 2.5s linear infinite;
+    z-index: -2;
+  }
+  .btn-moving-border::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    background: hsl(var(--card));
+    border-radius: calc(var(--radius) - 2px);
+    z-index: -1;
+    transition: background-color 0.2s ease;
+  }
+  .btn-moving-border:hover::after {
+    background: hsl(var(--muted));
+  }
+  .card-moving-border {
+    position: relative;
+    overflow: hidden;
+    background: transparent !important;
+    border: none;
+    z-index: 1;
+  }
+  .card-moving-border::before {
+    content: "";
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: conic-gradient(transparent, hsl(var(--primary)), transparent 25%);
+    animation: spin 4s linear infinite; /* Slower spin for a more elegant look on large cards */
+    z-index: -2;
+  }
+  .card-moving-border::after {
+    content: "";
+    position: absolute;
+    inset: 1px; /* 1px border thickness */
+    background: hsl(var(--card));
+    border-radius: inherit;
+    z-index: -1;
+  }
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Custom Webkit Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+@keyframes neon-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px hsl(var(--primary) / 0.2), 0 0 12px hsl(var(--primary) / 0.1);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.6), 0 0 25px hsl(var(--primary) / 0.4);
+    border-color: hsl(var(--primary) / 1);
+  }
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
 }

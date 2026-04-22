@@ -51,6 +51,7 @@ import L from "leaflet";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet.css";
+import { motion, Variants } from "framer-motion";
 
 const DefaultIcon = L.icon({
   iconUrl: markerIcon,
@@ -61,10 +62,10 @@ const DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 const getCustomIcon = (type: string) => {
-  const emoji = type === 'electricity' ? '⚡' : type === 'water' ? '💧' : '🌐';
+  const emoji = type === "electricity" ? "⚡" : type === "water" ? "💧" : "🌐";
   return L.divIcon({
-    html: `<div style="font-size: 16px; background: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid ${type === 'electricity' ? '#f59e0b' : type === 'water' ? '#3b82f6' : '#10b981'}">${emoji}</div>`,
-    className: 'custom-leaflet-icon',
+    html: `<div style="font-size: 16px; background: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid ${type === "electricity" ? "#f59e0b" : type === "water" ? "#3b82f6" : "#10b981"}">${emoji}</div>`,
+    className: "custom-leaflet-icon",
     iconSize: [28, 28],
     iconAnchor: [14, 14],
     popupAnchor: [0, -14],
@@ -144,14 +145,19 @@ export default function AdminDashboard() {
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const newPos: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        const newPos: [number, number] = [
+          pos.coords.latitude,
+          pos.coords.longitude,
+        ];
         if (map) {
           map.flyTo(newPos, 13);
         }
       },
       () => {
-        alert("Unable to retrieve your location. Please check your browser permissions.");
-      }
+        alert(
+          "Unable to retrieve your location. Please check your browser permissions.",
+        );
+      },
     );
   };
 
@@ -163,164 +169,206 @@ export default function AdminDashboard() {
     );
   }
 
+  // Framer motion variants for the staggered entry effect
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1, // Delays each child animation by 0.1s
+      },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  };
+
   return (
-    <div className="space-y-6">
-      <div>
+    <motion.div
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div variants={itemVariants}>
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <p className="text-muted-foreground">
           Overview of all outage reports and system health.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title="Total Outages"
-          value={outages.length}
-          icon={AlertTriangle}
-        />
-        <StatsCard
-          title="Pending Review"
-          value={pending}
-          icon={Clock}
-          description="Needs attention"
-        />
-        <StatsCard title="In Progress" value={inProgress} icon={Zap} />
-        <StatsCard title="Resolved" value={resolved} icon={CheckCircle} />
+        <motion.div variants={itemVariants}>
+          <StatsCard
+            title="Total Outages"
+            value={outages.length}
+            icon={AlertTriangle}
+          />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <StatsCard
+            title="Pending Review"
+            value={pending}
+            icon={Clock}
+            description="Needs attention"
+          />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <StatsCard title="In Progress" value={inProgress} icon={Zap} />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <StatsCard title="Resolved" value={resolved} icon={CheckCircle} />
+        </motion.div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Reports Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={trendData || []}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  className="stroke-border"
-                />
-                <XAxis
-                  dataKey="date"
-                  className="text-xs"
-                  tickFormatter={(val) =>
-                    new Date(val).toLocaleDateString("en-US", {
-                      weekday: "short",
-                      timeZone: "UTC",
-                    })
-                  }
-                />
-                <YAxis className="text-xs" />
-                <Tooltip
-                  labelFormatter={(val) =>
-                    new Date(val).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      timeZone: "UTC",
-                    })
-                  }
-                />
-                <Bar
-                  dataKey="count"
-                  fill="hsl(217, 91%, 60%)"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">By Priority</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie
-                  data={stats?.byPriority || []}
-                  dataKey="count"
-                  nameKey="priority"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label
-                >
-                  {(stats?.byPriority || []).map((_, i) => (
-                    <Cell
-                      key={i}
-                      fill={PRIORITY_COLORS[i % PRIORITY_COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) => {
-                    const total = stats?.totalOutages || 1;
-                    const percentage = ((value / total) * 100).toFixed(1);
-                    return `${percentage}%`;
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <motion.div variants={itemVariants}>
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base">Reports Trend</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={trendData || []}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-border"
+                  />
+                  <XAxis
+                    dataKey="date"
+                    className="text-xs"
+                    tickFormatter={(val) =>
+                      new Date(val).toLocaleDateString("en-US", {
+                        weekday: "short",
+                        timeZone: "UTC",
+                      })
+                    }
+                  />
+                  <YAxis className="text-xs" />
+                  <Tooltip
+                    labelFormatter={(val) =>
+                      new Date(val).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        timeZone: "UTC",
+                      })
+                    }
+                  />
+                  <Bar
+                    dataKey="count"
+                    fill="hsl(217, 91%, 60%)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base">By Priority</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={stats?.byPriority || []}
+                    dataKey="count"
+                    nameKey="priority"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    label
+                  >
+                    {(stats?.byPriority || []).map((_, i) => (
+                      <Cell
+                        key={i}
+                        fill={PRIORITY_COLORS[i % PRIORITY_COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number) => {
+                      const total = stats?.totalOutages || 1;
+                      const percentage = ((value / total) * 100).toFixed(1);
+                      return `${percentage}%`;
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Live Outage Map</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[400px] w-full rounded-md overflow-hidden border z-0 relative">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="absolute top-2 right-2 z-[1000] shadow-md"
-              onClick={handleLocateMe}
-            >
-              <MapPin className="w-4 h-4 mr-2" />
-              Locate Me
-            </Button>
-            <MapContainer
-              center={mapCenter}
-              zoom={11}
-              style={{ height: "100%", width: "100%" }}
-              ref={setMap}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {outages
-                .filter((o) => o.latitude && o.longitude)
-                .map((o) => (
-                  <Marker 
-                    key={o.id} 
-                    position={[o.latitude!, o.longitude!]}
-                    icon={getCustomIcon(o.type)}
-                  >
-                    <Popup>
-                      <div className="text-sm">
-                        <p className="font-semibold">{o.title}</p>
-                        <p className="text-xs text-muted-foreground">{o.location}</p>
-                        <div className="mt-2 flex gap-2">
-                          <span className="capitalize px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">{o.type}</span>
-                          <span className="capitalize px-2 py-1 bg-muted rounded-md text-xs">{o.status.replace('_', ' ')}</span>
+      <motion.div variants={itemVariants}>
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base">Live Outage Map</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[400px] w-full rounded-md overflow-hidden border z-0 relative">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="absolute top-2 right-2 z-[1000] shadow-md"
+                onClick={handleLocateMe}
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                Locate Me
+              </Button>
+              <MapContainer
+                center={mapCenter}
+                zoom={11}
+                style={{ height: "100%", width: "100%" }}
+                ref={setMap}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {outages
+                  .filter((o) => o.latitude && o.longitude)
+                  .map((o) => (
+                    <Marker
+                      key={o.id}
+                      position={[o.latitude!, o.longitude!]}
+                      icon={getCustomIcon(o.type)}
+                    >
+                      <Popup>
+                        <div className="text-sm">
+                          <p className="font-semibold">{o.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {o.location}
+                          </p>
+                          <div className="mt-2 flex gap-2">
+                            <span className="capitalize px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
+                              {o.type}
+                            </span>
+                            <span className="capitalize px-2 py-1 bg-muted rounded-md text-xs">
+                              {o.status.replace("_", " ")}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-            </MapContainer>
-          </div>
-        </CardContent>
-      </Card>
+                      </Popup>
+                    </Marker>
+                  ))}
+              </MapContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      <div>
+      <motion.div variants={itemVariants}>
         <h2 className="text-lg font-semibold mb-3">All Outage Reports</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {outages.map((o) => (
+      </motion.div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {outages.map((o) => (
+          <motion.div key={o.id} variants={itemVariants}>
             <OutageCard
-              key={o.id}
               outage={o}
               actions={
                 <>
@@ -357,8 +405,8 @@ export default function AdminDashboard() {
                 </>
               }
             />
-          ))}
-        </div>
+          </motion.div>
+        ))}
       </div>
 
       <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
@@ -416,6 +464,6 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }

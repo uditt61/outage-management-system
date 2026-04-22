@@ -7,31 +7,63 @@ import {
   Activity,
   Map,
   ArrowRight,
+  ChevronDown,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function LandingPage() {
   // Parallax Effects tracking scroll position
   const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 1000], [0, 200]);
-  const y2 = useTransform(scrollY, [0, 1000], [0, -200]);
+  const y1 = useTransform(scrollY, [0, 1000], [0, 400]); // Moves down fast
+  const y2 = useTransform(scrollY, [0, 1000], [0, -400]); // Moves up fast
+  const y3 = useTransform(scrollY, [0, 1000], [0, 250]); // Zap down slow
+  const y4 = useTransform(scrollY, [0, 1000], [0, -250]); // Alert up slow
+  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]); // Fade out on scroll
+
+  // Smooth Staggered Animation for Features
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2, // Delay each feature card by 0.2s
+      },
+    },
+  };
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden font-sans">
+    <div className="min-h-screen bg-background text-foreground overflow-hidden font-sans relative">
+      {/* Theme Toggle Top Right */}
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Hero Section with Dynamic Animation and Parallax */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Parallax Background Elements */}
-        <motion.div
-          style={{ y: y1 }}
-          className="absolute top-32 left-10 md:left-32 text-primary/10"
-        >
-          <Zap size={150} />
-        </motion.div>
-        <motion.div
-          style={{ y: y2 }}
-          className="absolute bottom-20 right-10 md:right-32 text-destructive/10"
-        >
-          <AlertTriangle size={180} />
-        </motion.div>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <motion.div
+            style={{ y: y1 }}
+            className="absolute top-[10%] left-[5%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] rounded-full bg-primary/10 blur-[100px]"
+          />
+          <motion.div
+            style={{ y: y2 }}
+            className="absolute top-[30%] right-[5%] w-[35vw] h-[35vw] max-w-[500px] max-h-[500px] rounded-full bg-blue-500/10 blur-[100px]"
+          />
+
+          <motion.div
+            style={{ y: y3 }}
+            className="absolute top-40 left-10 md:left-32 text-primary/20"
+          >
+            <Zap size={120} />
+          </motion.div>
+          <motion.div
+            style={{ y: y4 }}
+            className="absolute bottom-40 right-10 md:right-32 text-destructive/20"
+          >
+            <AlertTriangle size={150} />
+          </motion.div>
+        </div>
 
         <div className="z-10 text-center px-4 max-w-4xl mx-auto">
           <motion.div
@@ -91,6 +123,22 @@ export default function LandingPage() {
             </Button>
           </motion.div>
         </div>
+
+        {/* Animated Scroll Down Indicator */}
+        <motion.div
+          style={{ opacity: heroOpacity }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted-foreground z-10"
+        >
+          <span className="text-xs font-medium tracking-widest uppercase">
+            Scroll to explore
+          </span>
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          >
+            <ChevronDown className="w-6 h-6" />
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* Features Section - Slide/Fade In on Scroll */}
@@ -111,26 +159,29 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+          >
             <FeatureCard
               icon={<Activity className="w-10 h-10 text-primary" />}
               title="Real-Time Tracking"
               description="Monitor service health instantly with live dashboards and analytics."
-              delay={0.1}
             />
             <FeatureCard
               icon={<Map className="w-10 h-10 text-primary" />}
               title="Interactive Maps"
               description="Pinpoint outage locations geographically for faster resolution and routing."
-              delay={0.2}
             />
             <FeatureCard
               icon={<ShieldCheck className="w-10 h-10 text-primary" />}
               title="Automated Updates"
               description="Keep customers and technicians in sync with automated notifications."
-              delay={0.3}
             />
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -167,20 +218,20 @@ function FeatureCard({
   icon,
   title,
   description,
-  delay,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
-  delay: number;
 }) {
+  const itemVariants = {
+    hidden: { opacity: 0, y: 50 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  };
+
   return (
     <motion.div
+      variants={itemVariants}
       className="bg-card text-card-foreground p-8 rounded-2xl border shadow-sm"
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5, delay }}
       whileHover={{
         y: -10,
         boxShadow:
