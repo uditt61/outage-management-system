@@ -1,6 +1,7 @@
 const Outage = require('../models/Outage');
 const Notification = require('../models/Notification');
-const { Admin } = require('../models/User');
+const { Admin, User } = require('../models/User');
+const { sendEmail } = require('../models/emailService');
 
 exports.getAllOutages = async (req, res) => {
   try {
@@ -30,6 +31,16 @@ exports.createOutage = async (req, res) => {
     
     if (adminNotifications.length > 0) {
       await Notification.insertMany(adminNotifications);
+      
+      // Send email to admins
+      const adminEmails = admins.map(admin => admin.email);
+      if (adminEmails.length > 0) {
+        await sendEmail(
+          adminEmails.join(','),
+          'New Outage Report Submitted',
+          `A new outage report titled '${newOutage.title}' has been submitted by ${newOutage.reportedByName} and is pending review.\n\nDescription: ${newOutage.description}\nLocation: ${newOutage.location}`
+        ).catch(console.error);
+      }
     }
 
     res.status(201).json(newOutage);
@@ -73,12 +84,32 @@ exports.updateOutage = async (req, res) => {
         if (adminNotifications.length > 0) {
           await Notification.insertMany(adminNotifications);
         }
+        
+        // Send email to consumer
+        const reporter = await User.findById(outage.reportedBy);
+        if (reporter && reporter.email) {
+          await sendEmail(
+            reporter.email,
+            'Outage Report Resolved',
+            `Hello ${reporter.name},\n\nYour outage report titled '${outage.title}' has been successfully resolved.\n\nResolution Notes: ${outage.resolutionNotes || 'No additional notes provided.'}\n\nThank you for reporting.`
+          ).catch(console.error);
+        }
       }
     }
 
     if (req.body.assignedTo && req.body.assignedTo !== oldOutage.assignedTo) {
       await Notification.create({ userId: req.body.assignedTo, message: `You have been assigned to a new outage: '${outage.title}'.` });
       await Notification.create({ userId: outage.reportedBy, message: `A technician (${req.body.assignedToName}) has been assigned to your outage report '${outage.title}'.` });
+
+      // Send email to technician
+      const technician = await User.findById(req.body.assignedTo);
+      if (technician && technician.email) {
+        await sendEmail(
+          technician.email,
+          'New Outage Assignment',
+          `Hello ${technician.name},\n\nYou have been assigned to a new outage report titled '${outage.title}'.\n\nDescription: ${outage.description}\nLocation: ${outage.location}\nPriority: ${outage.priority}\n\nPlease review the dashboard for more details.`
+        ).catch(console.error);
+      }
     }
 
     res.json(outage);
